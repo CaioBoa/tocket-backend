@@ -11,6 +11,7 @@ from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
 import requests
+import json
 
 @api_view(['GET'])
 def events(request):
@@ -126,12 +127,17 @@ def poke_user(request):
         if (":" in content) and ("/" in content):
                 pokemon = content.split(":")[0]
                 pokemon = pokemon.replace(" ", "").lower()
+                png = "https://img.pokemondb.net/sprites/brilliant-diamond-shining-pearl/normal/"+pokemon+".png"
                 c1 = content.split(":")[1].split("/")[0]
                 c1 = c1.replace(" ", "").lower()
                 c2 = content.split(":")[1].split("/")[1].split(".")[0]
                 c2 = c2.replace(" ", "").lower()
-                png = "https://img.pokemondb.net/sprites/brilliant-diamond-shining-pearl/normal/" + pokemon + ".png"
-
+                with open('pokemon.json', 'r') as f:
+                    pokemons = json.load(f)
+                for p in pokemons:
+                    if p["slug"] == pokemon:
+                        png = p["ThumbnailImage"]
+                        break
                 ret = {
                     "pokemon": pokemon,
                     "c1": c1,
@@ -168,16 +174,23 @@ def poke_event(request):
     while True:
         response = requests.post(url, json=payload, headers=headers)
         content = response.json()["choices"][0]["message"]["content"]
-        counter += 1
         print(content)
+        counter += 1
         if (":" in content) and ("/" in content):
+                png = ""
                 pokemon = content.split(":")[0]
                 pokemon = pokemon.replace(" ", "").lower()
                 c1 = content.split(":")[1].split("/")[0]
                 c1 = c1.replace(" ", "").lower()
                 c2 = content.split(":")[1].split("/")[1].split(".")[0]
                 c2 = c2.replace(" ", "").lower()
-                png = "https://img.pokemondb.net/sprites/brilliant-diamond-shining-pearl/normal/" + pokemon + ".png"
+
+                with open('pokemon.json', 'r') as f:
+                    pokemons = json.load(f)
+                for p in pokemons:
+                    if p["slug"] == pokemon:
+                        png = p["ThumbnailImage"]
+                        break
 
                 ret = {
                     "pokemon": pokemon,
@@ -188,4 +201,20 @@ def poke_event(request):
                 return Response(ret)
         if counter == 3:
             return Response(status=204)
+
+@api_view(['GET'])
+def poke(request):
+    url = "https://pokedex2.p.rapidapi.com/pokedex/uk"
+
+    headers = {
+        "X-RapidAPI-Key": "ee86e4df16msh1a98ded04575ec5p1d27a0jsn74e1538c0c2e",
+        "X-RapidAPI-Host": "pokedex2.p.rapidapi.com"
+    }
+
+    response = requests.get(url, headers=headers)
+
+    print(response.json())
+
+    with open("pokemon.json", "w") as outfile:
+        json.dump(response.json(), outfile)
 
