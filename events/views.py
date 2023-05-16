@@ -83,7 +83,7 @@ def user_event(request):
     
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def gpt(request):
+def poke_user(request):
     user = request.user
     try:
         usuario = Usuario.objects.get(user=user)
@@ -93,9 +93,12 @@ def gpt(request):
     events = usuario.events.all()
     events_names = ""
     for event in events:
-        events_names += ((event.nome) + ", ")
-    question = "Baseado em tais nomes de eventos: " + events_names + "me diga o nome de um Pokemon que de alguma forma remeta a tais nomes e duas características que colaboram para tal associação. Sua reposta deve ser dada na seguinte formatação: (Pokemon) : (Característica 1), (Característica 2)"
-
+        if events_names == "":
+            events_names += ((event.nome))
+        else:
+            events_names += (", " + (event.nome))
+    question = "Me envie uma resposta associando a seguinte lista de eventos: {" + events_names + "} com um pokemon, além de duas características dele que contribuem para tal associação. A resposta deve ser enviada no seguinte modelo exato contendo apenas 3 palavras: (pokemon): (característica 1)/(característica 2) \n Exemplo: Pikachu: elétrico/fofo"
+    print(events_names)
     url = "https://openai80.p.rapidapi.com/chat/completions"
 
     payload = {
@@ -112,9 +115,77 @@ def gpt(request):
         "X-RapidAPI-Key": "ee86e4df16msh1a98ded04575ec5p1d27a0jsn74e1538c0c2e",
         "X-RapidAPI-Host": "openai80.p.rapidapi.com"
     }
+    
+    counter = 0
 
-    response = requests.post(url, json=payload, headers=headers)
+    while True:
+        response = requests.post(url, json=payload, headers=headers)
+        content = response.json()["choices"][0]["message"]["content"]
+        counter += 1
+        print(content)
+        if (":" in content) and ("/" in content):
+                pokemon = content.split(":")[0]
+                pokemon = pokemon.replace(" ", "").lower()
+                c1 = content.split(":")[1].split("/")[0]
+                c1 = c1.replace(" ", "").lower()
+                c2 = content.split(":")[1].split("/")[1].split(".")[0]
+                c2 = c2.replace(" ", "").lower()
+                png = "https://img.pokemondb.net/sprites/brilliant-diamond-shining-pearl/normal/" + pokemon + ".png"
 
-    print(response.json())
-    print(response.json()["choices"][0]["message"]["content"])
-    return Response(response.json())
+                ret = {
+                    "pokemon": pokemon,
+                    "c1": c1,
+                    "c2": c2,
+                    "png": png
+                }
+                return Response(ret)
+        if counter == 3:
+            return Response(status=204)
+
+@api_view(['GET'])
+def poke_event(request):
+    event = request.data['nome_evento']
+    question = "Me envie uma resposta associando o seguinte evento: " + event + " com um pokemon, além de duas características dele que contribuem para tal associação. A resposta deve ser enviada no seguinte modelo exato contendo apenas 3 palavras: (pokemon): (característica 1)/(característica 2) \n Exemplo: Pikachu: avassalador/fofo"
+    url = "https://openai80.p.rapidapi.com/chat/completions"
+
+    payload = {
+        "model": "gpt-3.5-turbo",
+        "messages": [
+            {
+                "role": "user",
+                "content": question
+            }
+        ]
+    }
+    headers = {
+        "content-type": "application/json",
+        "X-RapidAPI-Key": "ee86e4df16msh1a98ded04575ec5p1d27a0jsn74e1538c0c2e",
+        "X-RapidAPI-Host": "openai80.p.rapidapi.com"
+    }
+    
+    counter = 0
+
+    while True:
+        response = requests.post(url, json=payload, headers=headers)
+        content = response.json()["choices"][0]["message"]["content"]
+        counter += 1
+        print(content)
+        if (":" in content) and ("/" in content):
+                pokemon = content.split(":")[0]
+                pokemon = pokemon.replace(" ", "").lower()
+                c1 = content.split(":")[1].split("/")[0]
+                c1 = c1.replace(" ", "").lower()
+                c2 = content.split(":")[1].split("/")[1].split(".")[0]
+                c2 = c2.replace(" ", "").lower()
+                png = "https://img.pokemondb.net/sprites/brilliant-diamond-shining-pearl/normal/" + pokemon + ".png"
+
+                ret = {
+                    "pokemon": pokemon,
+                    "c1": c1,
+                    "c2": c2,
+                    "png": png
+                }
+                return Response(ret)
+        if counter == 3:
+            return Response(status=204)
+
