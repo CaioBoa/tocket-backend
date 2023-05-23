@@ -145,7 +145,7 @@ def poke_user(request):
                 ret = {
                     "pokemon": "snorlax",
                     "c1": "tranquilo",
-                    "c2": "safadão",
+                    "c2": "maneiro",
                     "png": "https://assets.pokemon.com/assets/cms2/img/pokedex/detail/143.png",
                     "Status": "Pokemon not Found"
                 }    
@@ -181,6 +181,7 @@ def poke_event(request):
                 max_tokens=30,
                 temperature=0.5
             )
+
             content = completion.choices[0]["text"]
             counter += 1
             if (":" in content) and ("/" in content):
@@ -198,7 +199,6 @@ def poke_event(request):
                 for p in pokemons:
                     if p["slug"] == pokemon:
                         png = p["ThumbnailImage"]
-
                         ret = {
                             "pokemon": pokemon,
                             "c1": c1,
@@ -214,10 +214,13 @@ def poke_event(request):
                     "c2": "charmoso",
                     "png": "https://assets.pokemon.com/assets/cms2/img/pokedex/detail/590.png",
                     "Status": "Pokemon not Found"
-                }    
+                } 
+            else:
+                print("Error in content")   
                 
         except:
             counter += 1
+            print("Error in completion")
             
         
         if counter == 5:
@@ -228,6 +231,7 @@ def poke_event(request):
                     "png": "https://assets.pokemon.com/assets/cms2/img/pokedex/detail/172.png",
                     "Status": "Counter Exceeded"
                 }
+            print("Counter Exceeded")
             return Response(ret)
 
 @api_view(['GET'])
