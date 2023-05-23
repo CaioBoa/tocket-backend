@@ -12,6 +12,9 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
 import requests
 import json
+import time
+import os
+import openai
 
 @api_view(['GET'])
 def events(request):
@@ -85,13 +88,14 @@ def user_event(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def poke_user(request):
-    print(request)
     user = request.user
     try:
         usuario = Usuario.objects.get(user=user)
     except usuario.DoesNotExist:
         raise Http404()
     
+    Key = "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"
+    openai.api_key = Key
     events = usuario.events.all()
     events_names = ""
     for event in events:
@@ -99,95 +103,90 @@ def poke_user(request):
             events_names += ((event.nome))
         else:
             events_names += (", " + (event.nome))
-    question = "Me envie uma resposta associando a seguinte lista de eventos: {" + events_names + "} com um pokemon, além de duas características dele que contribuem para tal associação. A resposta deve ser enviada no seguinte modelo exato contendo apenas 3 palavras: (pokemon): (característica 1)/(característica 2) \n Exemplo: Pikachu: elétrico/fofo"
-    print(events_names)
-    url = "https://openai80.p.rapidapi.com/chat/completions"
-
-    payload = {
-        "model": "gpt-3.5-turbo",
-        "messages": [
-            {
-                "role": "user",
-                "content": question
-            }
-        ]
-    }
-    headers = {
-        "content-type": "application/json",
-        "X-RapidAPI-Key": "ee86e4df16msh1a98ded04575ec5p1d27a0jsn74e1538c0c2e",
-        "X-RapidAPI-Host": "openai80.p.rapidapi.com"
-    }
-    
+            
+    question = "Me envie uma resposta associando a(s) seguintes palavras: {" + events_names + "} com um pokemon, além de duas características dele que contribuem para tal associação. A resposta deve ser enviada no seguinte modelo exato contendo apenas 3 palavras: (pokemon): (característica 1)/(característica 2) \n Exemplo: Pikachu: pilantra/fofo"
     counter = 0
 
     while True:
-        response = requests.post(url, json=payload, headers=headers)
-        content = response.json()["choices"][0]["message"]["content"]
-        counter += 1
-        print(content)
-        if (":" in content) and ("/" in content):
-                pokemon = content.split(":")[0]
+        try:
+            completion = openai.Completion.create(
+                model="text-davinci-003",
+                prompt= question,
+                max_tokens=30,
+                temperature=0.5
+            )
+            content = completion.choices[0]["text"]
+            counter += 1
+            if (":" in content) and ("/" in content):
+                png = ""
+                pokemon = content.replace("\n", "")
+                pokemon = pokemon.split(":")[0]
                 pokemon = pokemon.replace(" ", "").lower()
-                png = "https://img.pokemondb.net/sprites/brilliant-diamond-shining-pearl/normal/"+pokemon+".png"
                 c1 = content.split(":")[1].split("/")[0]
                 c1 = c1.replace(" ", "").lower()
                 c2 = content.split(":")[1].split("/")[1].split(".")[0]
                 c2 = c2.replace(" ", "").lower()
+
                 with open('pokemon.json', 'r') as f:
                     pokemons = json.load(f)
                 for p in pokemons:
                     if p["slug"] == pokemon:
                         png = p["ThumbnailImage"]
-                        break
+
+                        ret = {
+                            "pokemon": pokemon,
+                            "c1": c1,
+                            "c2": c2,
+                            "png": png,
+                            "Status": "OK"
+                        }
+                        return Response(ret)
+                    
                 ret = {
-                    "pokemon": pokemon,
-                    "c1": c1,
-                    "c2": c2,
-                    "png": png
+                    "pokemon": "snorlax",
+                    "c1": "tranquilo",
+                    "c2": "safadão",
+                    "png": "https://assets.pokemon.com/assets/cms2/img/pokedex/detail/143.png",
+                    "Status": "Pokemon not Found"
+                }    
+                
+        except:
+            counter += 1
+            
+        
+        if counter == 5:
+            ret = {
+                    "pokemon": "articuno",
+                    "c1": "posturado",
+                    "c2": "gelado",
+                    "png": "https://assets.pokemon.com/assets/cms2/img/pokedex/detail/144.png",
+                    "Status": "Counter Exceeded"
                 }
-                return Response(ret)
-        if counter == 3:
-            return Response(status=204)
+            return Response(ret)
 
 @api_view(['GET'])
 def poke_event(request):
     event = request.data['nome_evento']
-    question = "Me envie uma resposta associando o seguinte evento: " + event + " com um pokemon, além de duas características dele que contribuem para tal associação. A resposta deve ser enviada no seguinte modelo exato contendo apenas 3 palavras: (pokemon): (característica 1)/(característica 2) \n Exemplo: Pikachu: pilantra/fofo"
-    url = "https://openai80.p.rapidapi.com/chat/completions"
-    payload = {
-        "model": "gpt-3.5-turbo",
-        "messages": [
-            {
-                "role": "user",
-                "content": question
-            }
-        ]
-    }
-    headers = {
-        "content-type": "application/json",
-        "X-RapidAPI-Key": "ee86e4df16msh1a98ded04575ec5p1d27a0jsn74e1538c0c2e",
-        "X-RapidAPI-Host": "openai80.p.rapidapi.com"
-    }
+    Key = "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"
+    openai.api_key = Key
+    question = "Me envie uma resposta associando a(s) seguintes palavras: " + event + " com um pokemon, além de duas características dele que contribuem para tal associação. A resposta deve ser enviada no seguinte modelo exato contendo apenas 3 palavras: (pokemon): (característica 1)/(característica 2) \n Exemplo: Pikachu: pilantra/fofo"
     
     counter = 0
 
     while True:
-        response = requests.post(url, json=payload, headers=headers)
-        print(response.json())
-        if response.json()["message"]:
-            ret = {
-                    "pokemon": "pikachu",
-                    "c1": "pilantra",
-                    "c2": "fofo",
-                    "png": "https://assets.pokemon.com/assets/cms2/img/pokedex/detail/025.png",
-                    "GPT": "Trollando"
-                }
-            return Response(ret)
-        content = response.json()["choices"][0]["message"]["content"]
-        counter += 1
-        if (":" in content) and ("/" in content):
+        try:
+            completion = openai.Completion.create(
+                model="text-davinci-003",
+                prompt= question,
+                max_tokens=30,
+                temperature=0.5
+            )
+            content = completion.choices[0]["text"]
+            counter += 1
+            if (":" in content) and ("/" in content):
                 png = ""
-                pokemon = content.split(":")[0]
+                pokemon = content.replace("\n", "")
+                pokemon = pokemon.split(":")[0]
                 pokemon = pokemon.replace(" ", "").lower()
                 c1 = content.split(":")[1].split("/")[0]
                 c1 = c1.replace(" ", "").lower()
@@ -199,18 +198,37 @@ def poke_event(request):
                 for p in pokemons:
                     if p["slug"] == pokemon:
                         png = p["ThumbnailImage"]
-                        break
 
+                        ret = {
+                            "pokemon": pokemon,
+                            "c1": c1,
+                            "c2": c2,
+                            "png": png,
+                            "Status": "OK"
+                        }
+                        return Response(ret)
+                    
                 ret = {
-                    "pokemon": pokemon,
-                    "c1": c1,
-                    "c2": c2,
-                    "png": png,
-                    "GPT": "OK"
+                    "pokemon": "foongus",
+                    "c1": "toxico",
+                    "c2": "charmoso",
+                    "png": "https://assets.pokemon.com/assets/cms2/img/pokedex/detail/590.png",
+                    "Status": "Pokemon not Found"
+                }    
+                
+        except:
+            counter += 1
+            
+        
+        if counter == 5:
+            ret = {
+                    "pokemon": "pichu",
+                    "c1": "pilantra",
+                    "c2": "curioso",
+                    "png": "https://assets.pokemon.com/assets/cms2/img/pokedex/detail/172.png",
+                    "Status": "Counter Exceeded"
                 }
-                return Response(ret)
-        if counter == 2:
-            return Response(status=204)
+            return Response(ret)
 
 @api_view(['GET'])
 def poke(request):
