@@ -152,7 +152,7 @@ def poke_user(request):
 @api_view(['GET'])
 def poke_event(request):
     event = request.data['nome_evento']
-    question = "Me envie uma resposta associando o seguinte evento: " + event + " com um pokemon, além de duas características dele que contribuem para tal associação. A resposta deve ser enviada no seguinte modelo exato contendo apenas 3 palavras: (pokemon): (característica 1)/(característica 2) \n Exemplo: Pikachu: avassalador/fofo"
+    question = "Me envie uma resposta associando o seguinte evento: " + event + " com um pokemon, além de duas características dele que contribuem para tal associação. A resposta deve ser enviada no seguinte modelo exato contendo apenas 3 palavras: (pokemon): (característica 1)/(característica 2) \n Exemplo: Pikachu: pilantra/fofo"
     url = "https://openai80.p.rapidapi.com/chat/completions"
     payload = {
         "model": "gpt-3.5-turbo",
@@ -178,7 +178,7 @@ def poke_event(request):
             ret = {
                     "pokemon": "pikachu",
                     "c1": "pilantra",
-                    "c2": "marolento",
+                    "c2": "fofo",
                     "png": "https://assets.pokemon.com/assets/cms2/img/pokedex/detail/025.png",
                     "GPT": "Trollando"
                 }
@@ -209,7 +209,7 @@ def poke_event(request):
                     "GPT": "OK"
                 }
                 return Response(ret)
-        if counter == 3:
+        if counter == 2:
             return Response(status=204)
 
 @api_view(['GET'])
