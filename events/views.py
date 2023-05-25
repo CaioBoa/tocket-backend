@@ -94,7 +94,7 @@ def poke_user(request):
     except usuario.DoesNotExist:
         raise Http404()
     
-    Key = "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"
+    Key = "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"
     openai.api_key = Key
     events = usuario.events.all()
     events_names = ""
@@ -169,7 +169,7 @@ def poke_user(request):
 def poke_event(request):
     event = request.data['event_name']
     #tivita = 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
-    Key = "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"
+    Key = "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"
     openai.api_key = Key
     question = "Me envie uma resposta associando a(s) seguintes palavras: {" + event + "} com um pokemon, além de duas características dele que contribuem para tal associação. A resposta deve ser enviada no seguinte modelo exato contendo apenas 3 palavras: (pokemon): (característica 1)/(característica 2) \n Exemplo: Pikachu: pilantra/fofo"
     
