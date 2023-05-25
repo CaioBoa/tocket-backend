@@ -26,9 +26,9 @@ def events(request):
     return Response(serialized_events.data)
 
 @api_view(['GET'])
-def event(request, nome_evento):
+def event(request, event_name):
     try:
-        event = Event.objects.get(nome=nome_evento)
+        event = Event.objects.get(name=event_name)
     except Event.DoesNotExist:
         raise Http404()
     serialized_event = EventSerializer(event)
@@ -73,11 +73,11 @@ def user_event(request):
         raise Http404()
     
     if request.method == 'POST':
-        event = Event.objects.get(nome=request.data['nome_evento'])
+        event = Event.objects.get(name=request.data['event_name'])
         usuario.events.add(event)
         return Response(status=204)
     elif request.method == 'DELETE':
-        event = Event.objects.get(nome=request.data['nome_evento'])
+        event = Event.objects.get(name=request.data['event_name'])
         usuario.events.remove(event)
         return Response(status=204)
     elif request.method == 'GET':
@@ -100,9 +100,9 @@ def poke_user(request):
     events_names = ""
     for event in events:
         if events_names == "":
-            events_names += ((event.nome))
+            events_names += ((event.name))
         else:
-            events_names += (", " + (event.nome))
+            events_names += (", " + (event.name))
             
     question = "Me envie uma resposta associando a(s) seguintes palavras: {" + events_names + "} com um pokemon, além de duas características dele que contribuem para tal associação. A resposta deve ser enviada no seguinte modelo exato contendo apenas 3 palavras: (pokemon): (característica 1)/(característica 2) \n Exemplo: Pikachu: pilantra/fofo"
     counter = 0
@@ -166,7 +166,7 @@ def poke_user(request):
 
 @api_view(['GET'])
 def poke_event(request):
-    event = request.data['nome_evento']
+    event = request.data['event_name']
     Key = "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"
     openai.api_key = Key
     question = "Me envie uma resposta associando a(s) seguintes palavras: " + event + " com um pokemon, além de duas características dele que contribuem para tal associação. A resposta deve ser enviada no seguinte modelo exato contendo apenas 3 palavras: (pokemon): (característica 1)/(característica 2) \n Exemplo: Pikachu: pilantra/fofo"
