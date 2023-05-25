@@ -94,7 +94,7 @@ def poke_user(request):
     except usuario.DoesNotExist:
         raise Http404()
     
-    Key = "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"
+    Key = "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"
     openai.api_key = Key
     events = usuario.events.all()
     events_names = ""
@@ -152,6 +152,7 @@ def poke_user(request):
                 
         except:
             counter += 1
+            print("Erro")
             
         
         if counter == 5:
@@ -167,9 +168,10 @@ def poke_user(request):
 @api_view(['GET'])
 def poke_event(request):
     event = request.data['event_name']
-    Key = "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"
+    #tivita = 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
+    Key = "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"
     openai.api_key = Key
-    question = "Me envie uma resposta associando a(s) seguintes palavras: " + event + " com um pokemon, além de duas características dele que contribuem para tal associação. A resposta deve ser enviada no seguinte modelo exato contendo apenas 3 palavras: (pokemon): (característica 1)/(característica 2) \n Exemplo: Pikachu: pilantra/fofo"
+    question = "Me envie uma resposta associando a(s) seguintes palavras: {" + event + "} com um pokemon, além de duas características dele que contribuem para tal associação. A resposta deve ser enviada no seguinte modelo exato contendo apenas 3 palavras: (pokemon): (característica 1)/(característica 2) \n Exemplo: Pikachu: pilantra/fofo"
     
     counter = 0
 
@@ -179,9 +181,9 @@ def poke_event(request):
                 model="text-davinci-003",
                 prompt= question,
                 max_tokens=30,
-                temperature=0.5
+                temperature=1
             )
-
+            print(completion)
             content = completion.choices[0]["text"]
             counter += 1
             if (":" in content) and ("/" in content):
