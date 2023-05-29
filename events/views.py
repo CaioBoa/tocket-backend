@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.http import Http404
-from .models import Event, Usuario
+from .models import Event, EventUser
 from .serializers import EventSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -26,9 +26,9 @@ def events(request):
     return Response(serialized_events.data)
 
 @api_view(['GET'])
-def event(request, event_name):
+def event(request, id):
     try:
-        event = Event.objects.get(name=event_name)
+        event = Event.objects.get(id=id)
     except Event.DoesNotExist:
         raise Http404()
     serialized_event = EventSerializer(event)
@@ -59,7 +59,7 @@ def user(request):
 
         user = User.objects.create_user(username, email, password)
         user.save()
-        usuario = Usuario(user=user)
+        usuario = EventUser(user=user)
         usuario.save()
         return Response(status=204)
     
@@ -68,7 +68,7 @@ def user(request):
 def user_event(request):
     user = request.user
     try:
-        usuario = Usuario.objects.get(user=user)
+        usuario = EventUser.objects.get(user=user)
     except usuario.DoesNotExist:
         raise Http404()
     
@@ -90,7 +90,7 @@ def user_event(request):
 def poke_user(request):
     user = request.user
     try:
-        usuario = Usuario.objects.get(user=user)
+        usuario = EventUser.objects.get(user=user)
     except usuario.DoesNotExist:
         raise Http404()
     

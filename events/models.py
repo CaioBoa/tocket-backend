@@ -11,7 +11,7 @@ class Event(models.Model):
     def __str__(self):
         return str(self.id) + " - " + self.name
 
-class Usuario(models.Model):
+class EventUser(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     events = models.ManyToManyField(Event, related_name='events')
 
