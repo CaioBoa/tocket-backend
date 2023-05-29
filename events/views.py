@@ -57,10 +57,18 @@ def user(request):
         email = request.data['email']
         password = request.data['password']
 
+        users = User.objects.all()
+        for user in users:
+            if user.username == username:
+                return Response(status=409)
+            if user.email == email:
+                return Response(status=409)
+
         user = User.objects.create_user(username, email, password)
         user.save()
         usuario = EventUser(user=user)
         usuario.save()
+        
         return Response(status=204)
     
 @api_view(['POST', 'GET', 'DELETE'])
@@ -116,7 +124,7 @@ def poke_user(request):
                 model="text-davinci-003",
                 prompt= question,
                 max_tokens=30,
-                temperature=0.5
+                temperature=1.4
             )
             content = completion.choices[0]["text"]
             counter += 1
@@ -175,7 +183,7 @@ def poke_event(request):
     Key1 = "sk-pOUM5TsDbUGlCab0UYSrT3"
     Key2 = "BlbkFJOXXcrAz7sLSjpG3f9aAN"
     Key = Key1 + Key2
-    
+
     openai.api_key = Key
     question = "Me envie uma resposta associando a(s) seguintes palavras: {" + event + "} com um pokemon, além de duas características dele que contribuem para tal associação. A resposta deve ser enviada no seguinte modelo exato contendo apenas 3 palavras: (pokemon): (característica 1)/(característica 2) \n Exemplo: Pikachu: pilantra/fofo"
     
@@ -187,7 +195,7 @@ def poke_event(request):
                 model="text-davinci-003",
                 prompt= question,
                 max_tokens=30,
-                temperature=1
+                temperature=0.8
             )
             print(completion)
             content = completion.choices[0]["text"]
