@@ -10,5 +10,5 @@ urlpatterns = [
     path('users/event/', views.user_event),
     path('poke/user/', views.poke_user),
     path('poke/event/', views.poke_event),
-    path('api/', views.poke),
+    path('poke/get/', views.poke),
 ]
