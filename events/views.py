@@ -53,22 +53,19 @@ def get_token(request):
 @api_view(['POST'])
 def user(request):
     if request.method == 'POST':
-        username = request.data['username']
-        email = request.data['email']
+        username = request.data.user['username']
         password = request.data['password']
 
         users = User.objects.all()
         for user in users:
             if user.username == username:
                 return Response(status=409)
-            if user.email == email:
-                return Response(status=409)
 
-        user = User.objects.create_user(username, email, password)
+        user = User.objects.create_user(username, password)
         user.save()
         usuario = EventUser(user=user)
         usuario.save()
-        
+
         return Response(status=204)
     
 @api_view(['POST', 'GET', 'DELETE'])
@@ -177,12 +174,15 @@ def poke_user(request):
             return Response(ret)
 
 @api_view(['GET'])
-def poke_event(request):
-    event = request.data['event_name']
-    #tivita = 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
+def poke_event(request, event):
+    print(event)
+    useKey = False
     Key1 = "sk-pOUM5TsDbUGlCab0UYSrT3"
     Key2 = "BlbkFJOXXcrAz7sLSjpG3f9aAN"
-    Key = Key1 + Key2
+    if useKey:
+        Key = Key1 + Key2
+    else:
+        Key = ""
 
     openai.api_key = Key
     question = "Me envie uma resposta associando a(s) seguintes palavras: {" + event + "} com um pokemon, além de duas características dele que contribuem para tal associação. A resposta deve ser enviada no seguinte modelo exato contendo apenas 3 palavras: (pokemon): (característica 1)/(característica 2) \n Exemplo: Pikachu: pilantra/fofo"
@@ -197,7 +197,6 @@ def poke_event(request):
                 max_tokens=30,
                 temperature=0.8
             )
-            print(completion)
             content = completion.choices[0]["text"]
             counter += 1
             if (":" in content) and ("/" in content):
