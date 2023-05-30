@@ -53,7 +53,8 @@ def get_token(request):
 @api_view(['POST'])
 def user(request):
     if request.method == 'POST':
-        username = request.data.user['username']
+        username = request.data['username']
+        email = request.data['email']
         password = request.data['password']
 
         users = User.objects.all()
@@ -61,7 +62,7 @@ def user(request):
             if user.username == username:
                 return Response(status=409)
 
-        user = User.objects.create_user(username, password)
+        user = User.objects.create_user(username, email, password)
         user.save()
         usuario = EventUser(user=user)
         usuario.save()
