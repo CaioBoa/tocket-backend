@@ -69,28 +69,30 @@ def user(request):
 
         return Response(status=204)
     
-@api_view(['POST', 'GET', 'DELETE'])
+@api_view(['POST', 'DELETE'])
 def user_event(request):
-    print(request.headers)
-    user = User.objects.get(pawword=request.headers['password'])
-    print(user)
+    print(request.data)
+    
+    user = User.objects.get(pawword=request.data['password'])
+
     try:
         usuario = EventUser.objects.get(user=user)
     except usuario.DoesNotExist:
         raise Http404()
     
     if request.method == 'POST':
-        event = Event.objects.get(id=request.headers['event_id'])
-        usuario.events.add(event)
-        return Response(status=204)
+        try:
+            event = Event.objects.get(id=request.data['event_id'])
+            usuario.events.add(event)
+            return Response(status=204)
+        except:
+            events = usuario.events.all()
+            serialized_events = EventSerializer(events, many=True)
+            return Response(serialized_events.data)
     elif request.method == 'DELETE':
         event = Event.objects.get(id=request.headers['event_id'])
         usuario.events.remove(event)
         return Response(status=204)
-    elif request.method == 'GET':
-        events = usuario.events.all()
-        serialized_events = EventSerializer(events, many=True)
-        return Response(serialized_events.data)
     
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
