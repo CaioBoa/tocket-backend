@@ -34,21 +34,21 @@ def event(request, id):
     serialized_event = EventSerializer(event)
     return Response(serialized_event.data)
 
-@api_view(['POST'])
-def get_token(request):
-    try:
-        if request.method == 'POST':
-            username = request.data['username']
-            password = request.data['password']
-            user = authenticate(username=username, password=password)
+# @api_view(['POST'])
+# def get_token(request):
+#     try:
+#         if request.method == 'POST':
+#             username = request.data['username']
+#             password = request.data['password']
+#             user = authenticate(username=username, password=password)
 
-            if user is not None:
-                token, created = Token.objects.get_or_create(user=user)
-                return JsonResponse({"token":token.key})
-            else:
-                return HttpResponseForbidden()
-    except:
-        return HttpResponseForbidden()
+#             if user is not None:
+#                 token, created = Token.objects.get_or_create(user=user)
+#                 return JsonResponse({"token":token.key})
+#             else:
+#                 return HttpResponseForbidden()
+#     except:
+#         return HttpResponseForbidden()
     
 @api_view(['POST'])
 def user(request):
@@ -70,20 +70,21 @@ def user(request):
         return Response(status=204)
     
 @api_view(['POST', 'GET', 'DELETE'])
-@permission_classes([IsAuthenticated])
 def user_event(request):
-    user = request.user
+    print(request.headers)
+    user = User.objects.get(pawword=request.headers['password'])
+    print(user)
     try:
         usuario = EventUser.objects.get(user=user)
     except usuario.DoesNotExist:
         raise Http404()
     
     if request.method == 'POST':
-        event = Event.objects.get(name=request.data['event_name'])
+        event = Event.objects.get(id=request.headers['event_id'])
         usuario.events.add(event)
         return Response(status=204)
     elif request.method == 'DELETE':
-        event = Event.objects.get(name=request.data['event_name'])
+        event = Event.objects.get(id=request.headers['event_id'])
         usuario.events.remove(event)
         return Response(status=204)
     elif request.method == 'GET':
