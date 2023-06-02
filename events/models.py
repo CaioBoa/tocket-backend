@@ -12,8 +12,11 @@ class Event(models.Model):
         return str(self.id) + " - " + self.name
 
 class EventUser(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    # user = models.OneToOneField(User, on_delete=models.CASCADE)
+    username = models.CharField(default="", max_length=200)
+    email = models.CharField(default="", max_length=200)
+    password = models.CharField(default="", max_length=200)
     events = models.ManyToManyField(Event, related_name='events')
 
     def __str__(self):
-        return str(self.id) + " - " + self.user.username
+        return str(self.id) + " - " + self.username

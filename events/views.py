@@ -56,42 +56,42 @@ def user(request):
         username = request.data['username']
         email = request.data['email']
         password = request.data['password']
-
-        users = User.objects.all()
-        for user in users:
-            if user.username == username:
+        eventUsers = EventUser.objects.all()
+        for eventUser in eventUsers:
+            if eventUser.username == username:
                 return Response(status=409)
 
-        user = User.objects.create_user(username, email, password)
-        user.save()
-        usuario = EventUser(user=user)
-        usuario.save()
+        eventUser = EventUser(username=username, email=email, password=password)
+        eventUser.save()
+        # usuario = EventUser(user=user)
+        # usuario.save()
 
         return Response(status=204)
     
-@api_view(['POST', 'DELETE'])
+@api_view(['GET', 'POST', 'DELETE'])
 def user_event(request):
-    print(request.data)
-    
-    user = User.objects.get(pawword=request.data['password'])
+
+    password = request.headers['Password']
 
     try:
-        usuario = EventUser.objects.get(user=user)
-    except usuario.DoesNotExist:
+        event_user = EventUser.objects.get(password=password)
+    except event_user.DoesNotExist:
         raise Http404()
     
     if request.method == 'POST':
-        try:
-            event = Event.objects.get(id=request.data['event_id'])
-            usuario.events.add(event)
-            return Response(status=204)
-        except:
-            events = usuario.events.all()
-            serialized_events = EventSerializer(events, many=True)
-            return Response(serialized_events.data)
+        event_id = int(request.data['event_id'])
+        event = Event.objects.get(id=event_id)
+        event_user.events.add(event)
+        return Response(status=204)
+    
+    if request.method == 'GET':
+        events = event_user.events.all()
+        serialized_events = EventSerializer(events, many=True)
+        return Response(serialized_events.data)
+    
     elif request.method == 'DELETE':
         event = Event.objects.get(id=request.headers['event_id'])
-        usuario.events.remove(event)
+        event_user.events.remove(event)
         return Response(status=204)
     
 @api_view(['GET'])
