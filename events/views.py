@@ -70,8 +70,9 @@ def user(request):
     
 @api_view(['GET', 'POST', 'DELETE'])
 def user_event(request):
-
-    password = request.headers['Password']
+    print("----------------------", request)
+    # password = request.headers['Password']
+    password = request.data['password']
 
     try:
         event_user = EventUser.objects.get(password=password)
@@ -79,15 +80,16 @@ def user_event(request):
         raise Http404()
     
     if request.method == 'POST':
-        event_id = int(request.data['event_id'])
-        event = Event.objects.get(id=event_id)
-        event_user.events.add(event)
-        return Response(status=204)
-    
-    if request.method == 'GET':
-        events = event_user.events.all()
-        serialized_events = EventSerializer(events, many=True)
-        return Response(serialized_events.data)
+        try:
+            event_id = int(request.data['event_id'])
+            event = Event.objects.get(id=event_id)
+            event_user.events.add(event)
+            return Response(status=204)
+        except:
+    # if request.method == 'GET':
+            events = event_user.events.all()
+            serialized_events = EventSerializer(events, many=True)
+            return Response(serialized_events.data)
     
     elif request.method == 'DELETE':
         event = Event.objects.get(id=request.headers['event_id'])
