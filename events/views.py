@@ -100,10 +100,11 @@ def user_event(request):
 
 @api_view(['GET'])
 def poke_event(request, event):
-    useKey = False
+    useKey = True
     print(event)
-    Key1 = "sk-pOUM5TsDbUGlCab0UYSrT3"
-    Key2 = "BlbkFJOXXcrAz7sLSjpG3f9aAN"
+    #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
+    Key1 = "sk-UUFNlQDYEDaD0fysta"
+    Key2 = "TGT3BlbkFJHUPYNGwvv97Qv5QUnVXZ"
     if useKey:
         Key = Key1 + Key2
     else:
@@ -120,8 +121,9 @@ def poke_event(request, event):
                 model="text-davinci-003",
                 prompt= question,
                 max_tokens=30,
-                temperature=0.8
+                temperature=0.6
             )
+            print(completion)
             content = completion.choices[0]["text"]
             counter += 1
             if (":" in content) and ("/" in content):
