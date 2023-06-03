@@ -84,6 +84,7 @@ def user_event(request):
             event_id = int(request.data['event_id'])
             event = Event.objects.get(id=event_id)
             event_user.events.add(event)
+            print(event_user.events.all())
             return Response(status=204)
         except:
     # if request.method == 'GET':
@@ -92,8 +93,9 @@ def user_event(request):
             return Response(serialized_events.data)
     
     elif request.method == 'DELETE':
-        event = Event.objects.get(id=request.headers['event_id'])
+        event = Event.objects.get(id=request.data['event_id'])
         event_user.events.remove(event)
+        print(event_user.events.all())
         return Response(status=204)
     
 @api_view(['GET'])
