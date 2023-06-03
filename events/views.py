@@ -70,7 +70,7 @@ def user(request):
     
 @api_view(['GET', 'POST', 'DELETE'])
 def user_event(request):
-    print("----------------------", request)
+    # print("----------------------", request)
     # password = request.headers['Password']
     password = request.data['password']
 
