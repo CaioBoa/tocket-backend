@@ -97,94 +97,11 @@ def user_event(request):
         event_user.events.remove(event)
         print(event_user.events.all())
         return Response(status=204)
-    
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def poke_user(request):
-    user = request.user
-    try:
-        usuario = EventUser.objects.get(user=user)
-    except usuario.DoesNotExist:
-        raise Http404()
-    
-    Key1 = "sk-pOUM5TsDbUGlCab0UYSrT3"
-    Key2 = "BlbkFJOXXcrAz7sLSjpG3f9aAN"
-    Key = Key1 + Key2
-
-    openai.api_key = Key
-    events = usuario.events.all()
-    events_names = ""
-    for event in events:
-        if events_names == "":
-            events_names += ((event.name))
-        else:
-            events_names += (", " + (event.name))
-            
-    question = "Me envie uma resposta associando a(s) seguintes palavras: {" + events_names + "} com um pokemon, além de duas características dele que contribuem para tal associação. A resposta deve ser enviada no seguinte modelo exato contendo apenas 3 palavras: (pokemon): (característica 1)/(característica 2) \n Exemplo: Pikachu: pilantra/fofo"
-    counter = 0
-
-    while True:
-        try:
-            completion = openai.Completion.create(
-                model="text-davinci-003",
-                prompt= question,
-                max_tokens=30,
-                temperature=1.4
-            )
-            content = completion.choices[0]["text"]
-            counter += 1
-            if (":" in content) and ("/" in content):
-                png = ""
-                pokemon = content.replace("\n", "")
-                pokemon = pokemon.split(":")[0]
-                pokemon = pokemon.replace(" ", "").lower()
-                c1 = content.split(":")[1].split("/")[0]
-                c1 = c1.replace(" ", "").lower()
-                c2 = content.split(":")[1].split("/")[1].split(".")[0]
-                c2 = c2.replace(" ", "").lower()
-
-                with open('pokemon.json', 'r') as f:
-                    pokemons = json.load(f)
-                for p in pokemons:
-                    if p["slug"] == pokemon:
-                        png = p["ThumbnailImage"]
-
-                        ret = {
-                            "pokemon": pokemon,
-                            "c1": c1,
-                            "c2": c2,
-                            "png": png,
-                            "Status": "OK"
-                        }
-                        return Response(ret)
-                    
-                ret = {
-                    "pokemon": "snorlax",
-                    "c1": "tranquilo",
-                    "c2": "maneiro",
-                    "png": "https://assets.pokemon.com/assets/cms2/img/pokedex/detail/143.png",
-                    "Status": "Pokemon not Found"
-                }    
-                
-        except:
-            counter += 1
-            print("Erro")
-            
-        
-        if counter == 5:
-            ret = {
-                    "pokemon": "articuno",
-                    "c1": "posturado",
-                    "c2": "gelado",
-                    "png": "https://assets.pokemon.com/assets/cms2/img/pokedex/detail/144.png",
-                    "Status": "Counter Exceeded"
-                }
-            return Response(ret)
 
 @api_view(['GET'])
 def poke_event(request, event):
-    print(event)
     useKey = False
+    print(event)
     Key1 = "sk-pOUM5TsDbUGlCab0UYSrT3"
     Key2 = "BlbkFJOXXcrAz7sLSjpG3f9aAN"
     if useKey:
