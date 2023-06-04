@@ -102,16 +102,15 @@ def user_event(request):
 def poke_event(request, event):
     useKey = True
     print(event)
-    #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
-    Key1 = "sk-UUFNlQDYEDaD0fysta"
-    Key2 = "TGT3BlbkFJHUPYNGwvv97Qv5QUnVXZ"
+    Key1 = "sk-I9C6NzzI0alONinaagsOT3Blbk"
+    Key2 = "FJJtpasS29MdYUWYZR0DUT"
     if useKey:
         Key = Key1 + Key2
     else:
         Key = ""
 
     openai.api_key = Key
-    question = "Me envie uma resposta associando a(s) seguintes palavras: {" + event + "} com um pokemon, além de duas características dele que contribuem para tal associação. A resposta deve ser enviada no seguinte modelo exato contendo apenas 3 palavras: (pokemon): (característica 1)/(característica 2) \n Exemplo: Pikachu: pilantra/fofo"
+    question = "Me envie uma resposta associando a(s) seguintes palavras: {" + event + "} com um pokemon, além de dois adjetivos que contribuem para tal associação. A resposta deve ser enviada no seguinte modelo exato contendo apenas 3 palavras: (pokemon): (adjetivo 1)/(adjetivo 2) \n Exemplo: Pikachu: pilantra/fofo"
     
     counter = 0
 
